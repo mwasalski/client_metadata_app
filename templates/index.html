@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client Signals | Lightweight CRM</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <h1>Client Signals</h1>
+        <p class="tagline">Lightweight CRM for sales reps — capture every blocker and green light with the Go / No-Go fields.</p>
+      </div>
+      <div class="header-actions">
+        <div class="pill">SQLite + Flask · No-nonsense UI</div>
+        <button id="resetDbBtn" class="danger" type="button" title="Deletes all records">Delete database</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <section class="panel">
+        <h2>Add or Update a Client</h2>
+        <form id="clientForm">
+          <label for="full_name">Full name *</label>
+          <input id="full_name" name="full_name" placeholder="Jane Doe" required>
+
+          <label for="company">Company</label>
+          <input id="company" name="company" placeholder="Acme Insurance">
+
+          <label for="email">Email</label>
+          <input id="email" name="email" placeholder="jane@acme.com" type="email">
+
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" placeholder="+1 555 123 4567">
+
+          <label for="status">Status</label>
+          <select id="status" name="status">
+            <option value="prospect">Prospect</option>
+            <option value="active">Active</option>
+            <option value="closed">Closed Won</option>
+            <option value="churn_risk">Churn Risk</option>
+          </select>
+
+          <label for="go_factors">Go factors</label>
+          <textarea id="go_factors" name="go_factors" placeholder="Budget approved, timing aligned, prefers bundled policy"></textarea>
+
+          <label for="no_go_factors">No-Go factors</label>
+          <textarea id="no_go_factors" name="no_go_factors" placeholder="Client only wants orange iPhone 17 Pro; refuses annual billing"></textarea>
+          <div class="small-note">Use Go / No-Go to log deal signals: blockers, non-negotiables, and what makes them say yes.</div>
+
+          <label for="notes">Notes</label>
+          <textarea id="notes" name="notes" placeholder="Any extra context, meeting notes, competitor mentions..."></textarea>
+
+          <div class="actions">
+            <button class="primary" type="submit" id="submitBtn">Save client</button>
+            <button class="ghost" type="button" id="cancelBtn" style="display:none;">Cancel edit</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="list-head">
+          <div>
+            <h2>Pipeline</h2>
+            <div class="small-note">Click a card to edit. Keep Go / No-Go up to date for the team.</div>
+          </div>
+          <div class="filters">
+            <input id="search" placeholder="Search name or company" style="width: 220px;">
+            <select id="statusFilter">
+              <option value="">All statuses</option>
+              <option value="prospect">Prospect</option>
+              <option value="active">Active</option>
+              <option value="closed">Closed Won</option>
+              <option value="churn_risk">Churn Risk</option>
+            </select>
+          </div>
+        </div>
+        <div id="clientsList" class="list"></div>
+        <div id="emptyState" class="empty" style="display:none;">No clients yet. Add your first record on the left.</div>
+      </section>
+    </div>
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
