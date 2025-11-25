@@ -8,15 +8,16 @@ const emptyState = document.getElementById("emptyState");
 const searchInput = document.getElementById("search");
 const statusFilter = document.getElementById("statusFilter");
 const resetBtn = document.getElementById("resetDbBtn");
+const exportBtn = document.getElementById("exportBtn");
 
 let clients = [];
 let editingId = null;
 
 const statusLabels = {
   prospect: "Prospect",
-  active: "Active",
+  active: "Active Discussion",
   closed: "Closed Won",
-  churn_risk: "Churn Risk",
+  churn_risk: "At Risk",
 };
 
 function escapeHtml(text) {
@@ -59,22 +60,23 @@ function renderClients() {
       ].filter(Boolean);
 
       const go = client.go_factors
-        ? `<div class="badge go">Go: ${escapeHtml(client.go_factors)}</div>`
-        : `<div class="badge go muted">Go: not set</div>`;
+        ? `<div class="badge go"><strong>Green Lights</strong>${escapeHtml(client.go_factors)}</div>`
+        : `<div class="badge go" style="opacity:0.5"><strong>Green Lights</strong>—</div>`;
+
       const noGo = client.no_go_factors
-        ? `<div class="badge no-go">No-Go: ${escapeHtml(client.no_go_factors)}</div>`
-        : `<div class="badge no-go muted">No-Go: not set</div>`;
+        ? `<div class="badge no-go"><strong>Red Flags</strong>${escapeHtml(client.no_go_factors)}</div>`
+        : `<div class="badge no-go" style="opacity:0.5"><strong>Red Flags</strong>—</div>`;
 
       const notes = client.notes
         ? `<div class="notes">${escapeHtml(client.notes)}</div>`
-        : `<div class="notes muted">No extra notes yet.</div>`;
+        : ``;
 
       return `
         <article class="card" data-id="${client.id}">
           <div class="card-header">
             <div>
               <div class="client-name">${escapeHtml(client.full_name)}</div>
-              <div class="meta">${metaParts.length ? escapeHtml(metaParts.join(" · ")) : "—"}</div>
+              <div class="meta">${metaParts.length ? escapeHtml(metaParts.join(" · ")) : ""}</div>
             </div>
             <div class="status ${client.status}">${statusLabels[client.status] || client.status}</div>
           </div>
@@ -84,8 +86,8 @@ function renderClients() {
           </div>
           ${notes}
           <div class="card-actions">
-            <button class="ghost" data-action="edit">Edit</button>
-            <button class="ghost" data-action="delete" style="color: var(--danger); border-color: rgba(239,68,68,0.4);">Delete</button>
+            <button class="ghost" data-action="edit">Edit Details</button>
+            <button class="ghost" data-action="delete" style="color: var(--danger);">Delete</button>
           </div>
         </article>
       `;
@@ -95,10 +97,10 @@ function renderClients() {
 
 function setFormMode(mode) {
   if (mode === "edit") {
-    submitBtn.textContent = "Update client";
+    submitBtn.textContent = "Update Client";
     cancelBtn.style.display = "inline-flex";
   } else {
-    submitBtn.textContent = "Save client";
+    submitBtn.textContent = "Save Client";
     cancelBtn.style.display = "none";
     editingId = null;
   }
@@ -198,7 +200,7 @@ async function deleteClient(id) {
 
 async function resetDatabase() {
   const confirmed = confirm(
-    "Warning: you are about to delete your database. This removes all clients. Are you sure?"
+    "Are you sure you want to reset all data? This will delete every client record permanently."
   );
   if (!confirmed) return;
   try {
@@ -211,7 +213,7 @@ async function resetDatabase() {
     clearForm();
     setFormMode("create");
     await fetchClients();
-    alert("Database cleared. Start fresh by adding new clients.");
+    alert("All data has been reset. You can start fresh.");
   } catch (err) {
     console.error(err);
     alert("Could not reset database. Try again.");
@@ -228,5 +230,8 @@ listEl.addEventListener("click", handleListClick);
 searchInput.addEventListener("input", renderClients);
 statusFilter.addEventListener("change", renderClients);
 resetBtn.addEventListener("click", resetDatabase);
+exportBtn.addEventListener("click", () => {
+  window.location.href = "/api/export-csv";
+});
 
 fetchClients();

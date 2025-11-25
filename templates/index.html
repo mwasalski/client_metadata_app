@@ -3,82 +3,92 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Client Signals | Lightweight CRM</title>
+  <title>Deal Signals | Sales Tracker</title>
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
   <div class="page">
     <header>
       <div>
-        <h1>Client Signals</h1>
-        <p class="tagline">Lightweight CRM for sales reps — capture every blocker and green light with the Go / No-Go fields.</p>
+        <h1>Deal Signals</h1>
+        <p class="tagline">Track your prospects and clear the path to closing.</p>
       </div>
       <div class="header-actions">
-        <div class="pill">SQLite + Flask · No-nonsense UI</div>
-        <button id="resetDbBtn" class="danger" type="button" title="Deletes all records">Delete database</button>
+        <button id="exportBtn" class="secondary" type="button" title="Download as CSV">Export CSV</button>
+        <button id="resetDbBtn" class="danger" type="button" title="Deletes all records">Reset Data</button>
       </div>
     </header>
 
     <div class="layout">
-      <section class="panel">
-        <h2>Add or Update a Client</h2>
+      <section class="panel form-panel">
+        <h2>Client Details</h2>
         <form id="clientForm">
-          <label for="full_name">Full name *</label>
-          <input id="full_name" name="full_name" placeholder="Jane Doe" required>
+          <label for="full_name">Full Name *</label>
+          <input id="full_name" name="full_name" placeholder="e.g. Jane Doe" required>
 
           <label for="company">Company</label>
-          <input id="company" name="company" placeholder="Acme Insurance">
+          <input id="company" name="company" placeholder="e.g. Acme Corp">
 
-          <label for="email">Email</label>
-          <input id="email" name="email" placeholder="jane@acme.com" type="email">
+          <div class="row">
+            <div class="col">
+              <label for="email">Email</label>
+              <input id="email" name="email" placeholder="jane@example.com" type="email">
+            </div>
+            <div class="col">
+              <label for="phone">Phone</label>
+              <input id="phone" name="phone" placeholder="+1 555 000 0000">
+            </div>
+          </div>
 
-          <label for="phone">Phone</label>
-          <input id="phone" name="phone" placeholder="+1 555 123 4567">
-
-          <label for="status">Status</label>
+          <label for="status">Pipeline Status</label>
           <select id="status" name="status">
             <option value="prospect">Prospect</option>
-            <option value="active">Active</option>
+            <option value="active">Active Discussion</option>
             <option value="closed">Closed Won</option>
-            <option value="churn_risk">Churn Risk</option>
+            <option value="churn_risk">At Risk</option>
           </select>
 
-          <label for="go_factors">Go factors</label>
-          <textarea id="go_factors" name="go_factors" placeholder="Budget approved, timing aligned, prefers bundled policy"></textarea>
+          <div class="divider"></div>
 
-          <label for="no_go_factors">No-Go factors</label>
-          <textarea id="no_go_factors" name="no_go_factors" placeholder="Client only wants orange iPhone 17 Pro; refuses annual billing"></textarea>
-          <div class="small-note">Use Go / No-Go to log deal signals: blockers, non-negotiables, and what makes them say yes.</div>
+          <label for="go_factors" class="label-go">Green Lights (Go)</label>
+          <textarea id="go_factors" name="go_factors" placeholder="What is moving this deal forward? (e.g. Budget approved, Key decision maker on board)"></textarea>
 
-          <label for="notes">Notes</label>
-          <textarea id="notes" name="notes" placeholder="Any extra context, meeting notes, competitor mentions..."></textarea>
+          <label for="no_go_factors" class="label-no-go">Red Flags (No-Go)</label>
+          <textarea id="no_go_factors" name="no_go_factors" placeholder="What is blocking this deal? (e.g. Competitor pricing, Feature gap)"></textarea>
+          
+          <label for="notes">Additional Notes</label>
+          <textarea id="notes" name="notes" placeholder="Meeting notes, next steps, etc."></textarea>
 
           <div class="actions">
-            <button class="primary" type="submit" id="submitBtn">Save client</button>
-            <button class="ghost" type="button" id="cancelBtn" style="display:none;">Cancel edit</button>
+            <button class="primary" type="submit" id="submitBtn">Save Client</button>
+            <button class="ghost" type="button" id="cancelBtn" style="display:none;">Cancel</button>
           </div>
         </form>
       </section>
 
-      <section class="panel">
+      <section class="panel list-panel">
         <div class="list-head">
           <div>
             <h2>Pipeline</h2>
-            <div class="small-note">Click a card to edit. Keep Go / No-Go up to date for the team.</div>
+            <div class="small-note">Select a card to view or edit details.</div>
           </div>
           <div class="filters">
-            <input id="search" placeholder="Search name or company" style="width: 220px;">
+            <input id="search" placeholder="Search..." style="width: 200px;">
             <select id="statusFilter">
-              <option value="">All statuses</option>
+              <option value="">All Statuses</option>
               <option value="prospect">Prospect</option>
               <option value="active">Active</option>
-              <option value="closed">Closed Won</option>
-              <option value="churn_risk">Churn Risk</option>
+              <option value="closed">Won</option>
+              <option value="churn_risk">At Risk</option>
             </select>
           </div>
         </div>
         <div id="clientsList" class="list"></div>
-        <div id="emptyState" class="empty" style="display:none;">No clients yet. Add your first record on the left.</div>
+        <div id="emptyState" class="empty" style="display:none;">
+          <div class="empty-icon">📭</div>
+          <h3>Your pipeline is empty</h3>
+          <p>Add your first prospect on the left to get started.</p>
+        </div>
       </section>
     </div>
   </div>

@@ -7,7 +7,9 @@ import webbrowser
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, Response
+import csv
+import io
 
 
 def resolve_app_dirs():
@@ -202,14 +204,45 @@ def reset_db():
         conn.execute("DELETE FROM clients")
         conn.commit()
         conn.close()
-        # Run VACUUM separately in autocommit mode to avoid transaction errors.
-        vacuum_conn = sqlite3.connect(DATABASE)
-        vacuum_conn.isolation_level = None
-        vacuum_conn.execute("VACUUM")
-        vacuum_conn.close()
         return jsonify({"reset": True})
     except Exception as exc:  # pragma: no cover - runtime guard
         return jsonify({"error": f"Could not reset database: {exc}"}), 500
+
+
+@app.route("/api/export-csv", methods=["GET"])
+def export_csv():
+    """Generate a CSV of all clients."""
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM clients ORDER BY created_at DESC").fetchall()
+    conn.close()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Write header
+    headers = ["ID", "Full Name", "Company", "Email", "Phone", "Status", "Go Factors", "No-Go Factors", "Notes", "Created At"]
+    writer.writerow(headers)
+
+    # Write data
+    for row in rows:
+        writer.writerow([
+            row["id"],
+            row["full_name"],
+            row["company"],
+            row["email"],
+            row["phone"],
+            row["status"],
+            row["go_factors"],
+            row["no_go_factors"],
+            row["notes"],
+            row["created_at"]
+        ])
+
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment;filename=client_signals.csv"}
+    )
 
 
 if __name__ == "__main__":
