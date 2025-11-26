@@ -9,13 +9,18 @@ const searchInput = document.getElementById("search");
 const statusFilter = document.getElementById("statusFilter");
 const resetBtn = document.getElementById("resetDbBtn");
 const exportBtn = document.getElementById("exportBtn");
+const addQuick = document.getElementById("addQuick");
+const metricActive = document.getElementById("metricActive");
+const metricRisk = document.getElementById("metricRisk");
+const metricWon = document.getElementById("metricWon");
+const formTitle = document.getElementById("formTitle");
 
 let clients = [];
 let editingId = null;
 
 const statusLabels = {
   prospect: "Prospect",
-  active: "Active Discussion",
+  active: "Active",
   closed: "Closed Won",
   churn_risk: "At Risk",
 };
@@ -34,6 +39,22 @@ async function fetchClients() {
   const res = await fetch(apiBase);
   clients = await res.json();
   renderClients();
+  renderMetrics();
+}
+
+function renderMetrics() {
+  const counts = clients.reduce(
+    (acc, c) => {
+      if (c.status === "active") acc.active += 1;
+      if (c.status === "churn_risk") acc.risk += 1;
+      if (c.status === "closed") acc.won += 1;
+      return acc;
+    },
+    { active: 0, risk: 0, won: 0 }
+  );
+  if (metricActive) metricActive.textContent = counts.active;
+  if (metricRisk) metricRisk.textContent = counts.risk;
+  if (metricWon) metricWon.textContent = counts.won;
 }
 
 function renderClients() {
@@ -62,41 +83,29 @@ function renderClients() {
 
   listEl.innerHTML = filtered
     .map((client) => {
-      const metaParts = [
-        client.company || null,
-        client.email || null,
-        client.phone || null,
-      ].filter(Boolean);
-
+      const metaParts = [client.company, client.email, client.phone].filter(Boolean);
       const go = client.go_factors
         ? `<div class="badge go"><strong>Green Lights</strong>${escapeHtml(client.go_factors)}</div>`
         : `<div class="badge go" style="opacity:0.6"><strong>Green Lights</strong>None yet</div>`;
-
       const noGo = client.no_go_factors
         ? `<div class="badge no-go"><strong>Red Flags</strong>${escapeHtml(client.no_go_factors)}</div>`
         : `<div class="badge no-go" style="opacity:0.6"><strong>Red Flags</strong>None yet</div>`;
-
-      const notes = client.notes
-        ? `<div class="notes">${escapeHtml(client.notes)}</div>`
-        : "";
+      const notes = client.notes ? `<div class="notes">${escapeHtml(client.notes)}</div>` : "";
 
       return `
         <article class="card" data-id="${client.id}">
           <div class="card-header">
             <div>
               <div class="client-name">${escapeHtml(client.full_name)}</div>
-              <div class="meta">${metaParts.length ? escapeHtml(metaParts.join(" | ")) : ""}</div>
+              <div class="meta">${metaParts.length ? escapeHtml(metaParts.join(" • ")) : ""}</div>
             </div>
             <div class="status ${client.status}">${statusLabels[client.status] || client.status}</div>
           </div>
-          <div class="badges">
-            ${go}
-            ${noGo}
-          </div>
+          <div class="badges">${go}${noGo}</div>
           ${notes}
           <div class="card-actions">
-            <button class="ghost" data-action="edit">Edit Details</button>
-            <button class="ghost" data-action="delete" style="color: var(--danger);">Delete</button>
+            <button class="ghost" data-action="edit">Edit</button>
+            <button class="ghost danger-ghost" data-action="delete">Delete</button>
           </div>
         </article>
       `;
@@ -108,10 +117,12 @@ function setFormMode(mode) {
   if (mode === "edit") {
     submitBtn.textContent = "Update Client";
     cancelBtn.style.display = "inline-flex";
+    formTitle.textContent = "Edit client";
   } else {
     submitBtn.textContent = "Save Client";
     cancelBtn.style.display = "none";
     editingId = null;
+    formTitle.textContent = "Create client";
   }
 }
 
@@ -152,7 +163,7 @@ async function saveClient(e) {
     });
 
     if (!res.ok) {
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       alert(data.errors ? data.errors.join("\n") : "Something went wrong.");
       return;
     }
@@ -206,7 +217,7 @@ async function deleteClient(id) {
 
 async function resetDatabase() {
   const confirmed = confirm(
-    "Are you sure you want to reset all data? This will delete every client record permanently."
+    "Reset all data? This will delete every client record permanently."
   );
   if (!confirmed) return;
   try {
@@ -226,22 +237,33 @@ async function resetDatabase() {
   }
 }
 
-if (cancelBtn) {
-  cancelBtn.addEventListener("click", () => {
-    clearForm();
-    setFormMode("create");
-  });
+function wireEvents() {
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", () => {
+      clearForm();
+      setFormMode("create");
+    });
+  }
+  if (form) form.addEventListener("submit", saveClient);
+  if (listEl) listEl.addEventListener("click", handleListClick);
+  if (searchInput) searchInput.addEventListener("input", renderClients);
+  if (statusFilter) statusFilter.addEventListener("change", renderClients);
+  if (resetBtn) resetBtn.addEventListener("click", resetDatabase);
+  if (exportBtn) {
+    exportBtn.addEventListener("click", () => {
+      window.location.href = "/api/export-csv";
+    });
+  }
+  if (addQuick) {
+    addQuick.addEventListener("click", () => {
+      editingId = null;
+      clearForm();
+      setFormMode("create");
+      document.getElementById("full_name").focus();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
 }
 
-if (form) form.addEventListener("submit", saveClient);
-if (listEl) listEl.addEventListener("click", handleListClick);
-if (searchInput) searchInput.addEventListener("input", renderClients);
-if (statusFilter) statusFilter.addEventListener("change", renderClients);
-if (resetBtn) resetBtn.addEventListener("click", resetDatabase);
-if (exportBtn) {
-  exportBtn.addEventListener("click", () => {
-    window.location.href = "/api/export-csv";
-  });
-}
-
+wireEvents();
 fetchClients();

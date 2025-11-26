@@ -3,25 +3,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Deal Signals | Sales Tracker</title>
+  <title>Client Signals | Pipeline Desk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
   <div class="page">
-    <header>
-      <div>
-        <h1>Deal Signals</h1>
-        <p class="tagline">Track your prospects and clear the path to closing.</p>
+    <header class="hero">
+      <div class="hero-text">
+        <p class="eyebrow">Pipeline Desk</p>
+        <h1>Know every client’s next move</h1>
+        <p class="tagline">Capture green lights and red flags so your team always knows what moves a deal forward.</p>
+        <div class="hero-actions">
+          <button class="primary" type="button" id="addQuick">Add Client</button>
+          <button class="secondary" type="button" id="exportBtn">Export CSV</button>
+        </div>
       </div>
-      <div class="header-actions">
-        <button class="secondary" type="button" id="exportBtn">Export CSV</button>
-        <button class="danger" type="button" id="resetDbBtn">Reset Data</button>
+      <div class="hero-card">
+        <div class="hero-metric">
+          <div class="metric-label">Active Discussions</div>
+          <div class="metric-value" id="metricActive">0</div>
+        </div>
+        <div class="hero-metric">
+          <div class="metric-label">At Risk</div>
+          <div class="metric-value danger" id="metricRisk">0</div>
+        </div>
+        <div class="hero-metric">
+          <div class="metric-label">Won</div>
+          <div class="metric-value success" id="metricWon">0</div>
+        </div>
       </div>
     </header>
 
     <div class="layout">
       <section class="panel form-panel">
-        <h2>Client Details</h2>
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Client Sheet</p>
+            <h2 id="formTitle">Create client</h2>
+            <p class="small-note">All fields auto-save; only name is required.</p>
+          </div>
+          <button class="ghost danger-ghost" type="button" id="resetDbBtn">Reset Data</button>
+        </div>
         <form id="clientForm">
           <label for="full_name">Full Name *</label>
           <input id="full_name" name="full_name" placeholder="e.g. Jane Doe" required>
@@ -48,20 +73,23 @@
             <option value="churn_risk">At Risk</option>
           </select>
 
-          <div class="divider"></div>
+          <div class="pill-group">
+            <div>
+              <label for="go_factors" class="label-go">Green Lights</label>
+              <textarea id="go_factors" name="go_factors" placeholder="Budget approved, decision maker aligned..."></textarea>
+            </div>
+            <div>
+              <label for="no_go_factors" class="label-no-go">Red Flags</label>
+              <textarea id="no_go_factors" name="no_go_factors" placeholder="Competing bid, feature gap..."></textarea>
+            </div>
+          </div>
 
-          <label for="go_factors" class="label-go">Green Lights (Go)</label>
-          <textarea id="go_factors" name="go_factors" placeholder="What is moving this deal forward? (e.g. Budget approved, Key decision maker on board)"></textarea>
-
-          <label for="no_go_factors" class="label-no-go">Red Flags (No-Go)</label>
-          <textarea id="no_go_factors" name="no_go_factors" placeholder="What is blocking this deal? (e.g. Competitor pricing, Feature gap)"></textarea>
-          
-          <label for="notes">Additional Notes</label>
-          <textarea id="notes" name="notes" placeholder="Meeting notes, next steps, etc."></textarea>
+          <label for="notes">Notes</label>
+          <textarea id="notes" name="notes" placeholder="Meeting notes, next steps, owners..."></textarea>
 
           <div class="actions">
             <button class="primary" type="submit" id="submitBtn">Save Client</button>
-            <button class="ghost" type="button" id="cancelBtn" style="display:none;">Cancel</button>
+            <button class="ghost" type="button" id="cancelBtn" style="display:none;">Cancel edit</button>
           </div>
         </form>
       </section>
@@ -69,13 +97,14 @@
       <section class="panel list-panel">
         <div class="list-head">
           <div>
-            <h2>Pipeline</h2>
-            <div class="small-note">Select a card to view or edit details.</div>
+            <p class="eyebrow">Pipeline</p>
+            <h2>Client cards</h2>
+            <div class="small-note">Filter by status or search across names, companies, and notes.</div>
           </div>
           <div class="filters">
-            <input id="search" placeholder="Search..." style="width: 200px;">
+            <input id="search" placeholder="Search name, company, notes...">
             <select id="statusFilter">
-              <option value="">All Statuses</option>
+              <option value="">All statuses</option>
               <option value="prospect">Prospect</option>
               <option value="active">Active</option>
               <option value="closed">Won</option>
@@ -85,9 +114,9 @@
         </div>
         <div id="clientsList" class="list"></div>
         <div id="emptyState" class="empty" style="display:none;">
-          <div class="empty-icon">:-)</div>
-          <h3>Your pipeline is empty</h3>
-          <p>Add your first prospect on the left to get started.</p>
+          <div class="empty-icon">🗂️</div>
+          <h3>No clients yet</h3>
+          <p>Add your first prospect to see deal signals here.</p>
         </div>
       </section>
     </div>
