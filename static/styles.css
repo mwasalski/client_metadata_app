@@ -53,6 +53,7 @@ header {
   margin-bottom: 32px;
   border-bottom: 1px solid var(--border);
   padding-bottom: 24px;
+  gap: 12px;
 }
 
 h1 {
@@ -74,13 +75,15 @@ h1 {
 .header-actions {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 /* Layout */
 .layout {
   display: grid;
-  grid-template-columns: 400px 1fr;
-  gap: 24px;
+  grid-template-columns: minmax(300px, 38%) 1fr;
+  gap: 28px;
   align-items: start;
 }
 
@@ -202,7 +205,7 @@ button {
 }
 
 .danger {
-  background-color: rgba(239, 68, 68, 0.1);
+  background-color: rgba(239, 68, 68, 0.12);
   color: var(--danger);
   border: 1px solid rgba(239, 68, 68, 0.2);
 }
@@ -233,6 +236,7 @@ button {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 20px;
+  gap: 12px;
 }
 
 .small-note {
@@ -244,6 +248,7 @@ button {
 .filters {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .list {
@@ -253,16 +258,17 @@ button {
 }
 
 .card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
   padding: 20px;
-  transition: transform 0.2s, border-color 0.2s;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
 .card:hover {
   border-color: var(--border-focus);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .card-header {
@@ -270,6 +276,7 @@ button {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 12px;
+  gap: 8px;
 }
 
 .client-name {
@@ -291,6 +298,7 @@ button {
   border-radius: 999px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .status.prospect {
@@ -315,12 +323,13 @@ button {
 
 .badges {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin: 16px 0;
 }
 
 .badge {
-  flex: 1;
+  flex: 1 1 220px;
   padding: 12px;
   border-radius: 6px;
   font-size: 13px;
@@ -376,9 +385,9 @@ button {
 }
 
 .empty-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-  opacity: 0.5;
+  font-size: 32px;
+  margin-bottom: 12px;
+  opacity: 0.6;
 }
 
 .empty h3 {
@@ -393,5 +402,21 @@ button {
 
   .form-panel {
     position: static;
+  }
+
+  .list-panel {
+    order: -1;
+  }
+}
+
+@media (max-width: 640px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
   }
 }

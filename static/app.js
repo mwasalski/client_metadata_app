@@ -42,10 +42,19 @@ function renderClients() {
 
   const filtered = clients.filter((c) => {
     const matchesStatus = !status || c.status === status;
-    const matchesTerm =
-      !term ||
-      c.full_name.toLowerCase().includes(term) ||
-      (c.company || "").toLowerCase().includes(term);
+    const haystack = [
+      c.full_name,
+      c.company,
+      c.email,
+      c.phone,
+      c.go_factors,
+      c.no_go_factors,
+      c.notes,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    const matchesTerm = !term || haystack.includes(term);
     return matchesStatus && matchesTerm;
   });
 
@@ -61,22 +70,22 @@ function renderClients() {
 
       const go = client.go_factors
         ? `<div class="badge go"><strong>Green Lights</strong>${escapeHtml(client.go_factors)}</div>`
-        : `<div class="badge go" style="opacity:0.5"><strong>Green Lights</strong>—</div>`;
+        : `<div class="badge go" style="opacity:0.6"><strong>Green Lights</strong>None yet</div>`;
 
       const noGo = client.no_go_factors
         ? `<div class="badge no-go"><strong>Red Flags</strong>${escapeHtml(client.no_go_factors)}</div>`
-        : `<div class="badge no-go" style="opacity:0.5"><strong>Red Flags</strong>—</div>`;
+        : `<div class="badge no-go" style="opacity:0.6"><strong>Red Flags</strong>None yet</div>`;
 
       const notes = client.notes
         ? `<div class="notes">${escapeHtml(client.notes)}</div>`
-        : ``;
+        : "";
 
       return `
         <article class="card" data-id="${client.id}">
           <div class="card-header">
             <div>
               <div class="client-name">${escapeHtml(client.full_name)}</div>
-              <div class="meta">${metaParts.length ? escapeHtml(metaParts.join(" · ")) : ""}</div>
+              <div class="meta">${metaParts.length ? escapeHtml(metaParts.join(" | ")) : ""}</div>
             </div>
             <div class="status ${client.status}">${statusLabels[client.status] || client.status}</div>
           </div>
@@ -136,14 +145,11 @@ async function saveClient(e) {
   };
 
   try {
-    const res = await fetch(
-      editingId ? `${apiBase}/${editingId}` : apiBase,
-      {
-        method: editingId ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }
-    );
+    const res = await fetch(editingId ? `${apiBase}/${editingId}` : apiBase, {
+      method: editingId ? "PUT" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
     if (!res.ok) {
       const data = await res.json();
@@ -220,18 +226,22 @@ async function resetDatabase() {
   }
 }
 
-cancelBtn.addEventListener("click", () => {
-  clearForm();
-  setFormMode("create");
-});
+if (cancelBtn) {
+  cancelBtn.addEventListener("click", () => {
+    clearForm();
+    setFormMode("create");
+  });
+}
 
-form.addEventListener("submit", saveClient);
-listEl.addEventListener("click", handleListClick);
-searchInput.addEventListener("input", renderClients);
-statusFilter.addEventListener("change", renderClients);
-resetBtn.addEventListener("click", resetDatabase);
-exportBtn.addEventListener("click", () => {
-  window.location.href = "/api/export-csv";
-});
+if (form) form.addEventListener("submit", saveClient);
+if (listEl) listEl.addEventListener("click", handleListClick);
+if (searchInput) searchInput.addEventListener("input", renderClients);
+if (statusFilter) statusFilter.addEventListener("change", renderClients);
+if (resetBtn) resetBtn.addEventListener("click", resetDatabase);
+if (exportBtn) {
+  exportBtn.addEventListener("click", () => {
+    window.location.href = "/api/export-csv";
+  });
+}
 
 fetchClients();
