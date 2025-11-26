@@ -13,17 +13,23 @@ import io
 
 
 def resolve_app_dirs():
-    """Resolve paths for packaged (PyInstaller) and dev modes."""
+    """Resolve a stable base directory for the SQLite database.
+    We always store the DB next to the source file (or executable) so that
+    relaunching the app does not create a new temporary location.
+    """
+    # Use the directory containing this file (or the executable) as the base.
     if hasattr(sys, "_MEIPASS"):
-        runtime_dir = Path(sys._MEIPASS)  # temp folder with bundled assets
-        base_dir = Path(sys.executable).resolve().parent  # keep DB next to .exe
+        # When packaged with PyInstaller, sys.executable points to the .exe.
+        base_dir = Path(sys.executable).resolve().parent
     else:
-        runtime_dir = Path(__file__).resolve().parent
-        base_dir = runtime_dir
+        base_dir = Path(__file__).resolve().parent
+    # Runtime assets (static/templates) are still resolved from the appropriate location.
+    runtime_dir = Path(sys._MEIPASS) if hasattr(sys, "_MEIPASS") else base_dir
     return base_dir, runtime_dir
 
 
 BASE_DIR, RUNTIME_DIR = resolve_app_dirs()
+# Store the SQLite file in the stable base directory.
 DATABASE = BASE_DIR / "client_data.db"
 
 app = Flask(
@@ -34,7 +40,7 @@ app = Flask(
 
 def get_db() -> sqlite3.Connection:
     """Open a SQLite connection with Row objects for dict-like access."""
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect(DATABASE, timeout=30)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -42,6 +48,7 @@ def get_db() -> sqlite3.Connection:
 def init_db() -> None:
     """Create the clients table if it does not exist."""
     conn = get_db()
+    conn.execute("PRAGMA journal_mode=WAL")
     conn.execute(
         """
         CREATE TABLE IF NOT EXISTS clients (
