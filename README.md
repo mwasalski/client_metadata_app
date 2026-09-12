@@ -21,11 +21,16 @@ A lightweight CRM-style web app for sales reps who juggle many clients (e.g., in
    ```
 3. Run the app (will auto-create the database):
    ```bash
-   flask --app app run --debug
+   python app.py
    ```
-   Then open http://127.0.0.1:5000.
+   It prints the URL it picked (http://127.0.0.1:5050 by default) and opens your browser there.
 
-You can also run `python app.py` to start the development server.
+You can also run `flask --app app run --debug --port 5050`, or set `PORT` to choose a
+different port: `PORT=8080 python app.py`.
+
+> **macOS:** do not use port 5000. The AirPlay Receiver in Control Center listens there,
+> so `http://localhost:5000` is answered by AirTunes with an empty `403` — a blank page —
+> even while this app is running. That is why the default is 5050.
 
 ## Features
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import socket
 import sqlite3
 import sys
 import threading
@@ -252,8 +254,30 @@ def export_csv():
     )
 
 
+# Port 5000 is unusable on macOS: the AirPlay Receiver in Control Center holds a
+# wildcard listener there, so http://localhost:5000 resolves to ::1 and is answered
+# by AirTunes with an empty 403 -- a blank page -- even while this server is running
+# on 127.0.0.1. Default to a port nothing else claims; PORT overrides it.
+DEFAULT_PORT = int(os.environ.get("PORT", "5050"))
+
+
+def pick_port(preferred: int) -> int:
+    """Return `preferred` if it is free, otherwise an OS-assigned free port."""
+    for candidate in (preferred, 0):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+            try:
+                probe.bind(("127.0.0.1", candidate))
+            except OSError:
+                continue
+            return probe.getsockname()[1]
+    return preferred
+
+
 if __name__ == "__main__":
+    port = pick_port(DEFAULT_PORT)
+    url = f"http://127.0.0.1:{port}"
+    print(f" * Client Metadata App is at {url}")
     # Open the UI automatically for double-click usage.
-    threading.Timer(1.0, lambda: webbrowser.open("http://127.0.0.1:5000")).start()
+    threading.Timer(1.0, lambda: webbrowser.open(url)).start()
     debug_mode = not hasattr(sys, "_MEIPASS")
-    app.run(debug=debug_mode, use_reloader=False)
+    app.run(host="127.0.0.1", port=port, debug=debug_mode, use_reloader=False)

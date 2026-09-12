@@ -5,7 +5,8 @@ import sys
 import os
 import signal
 
-BASE_URL = "http://127.0.0.1:5000"
+PORT = os.environ.get("PORT", "5050")
+BASE_URL = f"http://127.0.0.1:{PORT}"
 
 def is_server_running():
     try:
